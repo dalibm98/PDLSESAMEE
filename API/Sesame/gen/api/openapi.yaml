@@ -1,0 +1,330 @@
+openapi: 3.0.3
+info:
+  description: Sesame API
+  title: Sesame API
+  version: 1.0.0
+servers:
+- url: https://Sesame
+paths:
+  /api/v1/auth/register:
+    post:
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseEntity'
+          description: OK
+      summary: POST api/v1/auth/register
+      x-contentType: application/json
+      x-accepts: '*/*'
+  /api/v1/auth/authenticate:
+    post:
+      operationId: authenticate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseEntity'
+          description: OK
+      summary: POST api/v1/auth/authenticate
+      x-contentType: application/json
+      x-accepts: '*/*'
+  /api/v1/auth/questions:
+    post:
+      operationId: addQuestion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Question'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseEntity'
+          description: OK
+      summary: POST api/v1/auth/questions
+      x-contentType: application/json
+      x-accepts: '*/*'
+  /api/v1/auth/questions/{id}:
+    get:
+      operationId: getQuestionById
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseEntity'
+          description: OK
+      summary: GET api/v1/auth/questions/{id}
+      x-accepts: '*/*'
+  /api/v1/auth/questions/{questionId}/reponses:
+    post:
+      operationId: addReponse
+      parameters:
+      - explode: false
+        in: path
+        name: questionId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reponse'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseEntity'
+          description: OK
+      summary: POST api/v1/auth/questions/{questionId}/reponses
+      x-contentType: application/json
+      x-accepts: '*/*'
+  /api/v1/auth/current-user:
+    get:
+      operationId: getCurrentUser
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseEntity'
+          description: OK
+      summary: GET api/v1/auth/current-user
+      x-accepts: '*/*'
+  /api/v1/auth/notifications/{notificationId}:
+    put:
+      operationId: markNotificationAsRead
+      parameters:
+      - explode: false
+        in: path
+        name: notificationId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseEntity'
+          description: OK
+      summary: PUT api/v1/auth/notifications/{notificationId}
+      x-accepts: '*/*'
+  /api/v1/auth/notifications:
+    get:
+      operationId: getNotifications
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseEntity'
+          description: OK
+      summary: GET api/v1/auth/notifications
+      x-accepts: '*/*'
+  /api/v1/auth/questions-with-reponses:
+    get:
+      operationId: getAllQuestionsWithReponses
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseEntity'
+          description: OK
+      summary: GET api/v1/auth/questions-with-reponses
+      x-accepts: '*/*'
+components:
+  schemas:
+    RegisterRequest:
+      example:
+        firstname: firstname
+        password: password
+        email: email
+        lastname: lastname
+      properties:
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      type: object
+    HttpHeaders:
+      properties: {}
+      type: object
+    ResponseEntity:
+      example:
+        headers: '{}'
+      properties:
+        headers:
+          properties: {}
+          type: object
+      type: object
+    AuthenticationRequest:
+      example:
+        password: password
+        email: email
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      type: object
+    User:
+      example:
+        firstname: firstname
+        password: password
+        role: ADMIN
+        id: 6
+        email: email
+        lastname: lastname
+      properties:
+        id:
+          format: int32
+          type: integer
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          enum:
+          - ADMIN
+          - ENSEIGNANT
+          - ETUDIANT
+          - USER
+          type: string
+      type: object
+    NatureQuestion:
+      example:
+        id_nature_question: 1
+        nom_nature_question: nom_nature_question
+      properties:
+        id_nature_question:
+          format: int64
+          type: integer
+        nom_nature_question:
+          type: string
+      type: object
+    DomaineQuestion:
+      example:
+        nom_domaine_question: nom_domaine_question
+        id_domaine_question: 5
+      properties:
+        id_domaine_question:
+          format: int64
+          type: integer
+        nom_domaine_question:
+          type: string
+      type: object
+    Question:
+      example:
+        date: 2000-01-23T04:56:07.000+00:00
+        nature:
+          id_nature_question: 1
+          nom_nature_question: nom_nature_question
+        domaine:
+          nom_domaine_question: nom_domaine_question
+          id_domaine_question: 5
+        sujet: sujet
+        contenu: contenu
+        id_question: 0
+        auteur:
+          firstname: firstname
+          password: password
+          role: ADMIN
+          id: 6
+          email: email
+          lastname: lastname
+      properties:
+        id_question:
+          format: int32
+          type: integer
+        sujet:
+          type: string
+        contenu:
+          type: string
+        date:
+          format: date-time
+          type: string
+        auteur:
+          $ref: '#/components/schemas/User'
+        nature:
+          $ref: '#/components/schemas/NatureQuestion'
+        domaine:
+          $ref: '#/components/schemas/DomaineQuestion'
+      type: object
+    Reponse:
+      example:
+        id_reponse: 0
+        dateCreation: 2000-01-23T04:56:07.000+00:00
+        vote_utilisateur:
+        - firstname: firstname
+          password: password
+          role: ADMIN
+          id: 6
+          email: email
+          lastname: lastname
+        - firstname: firstname
+          password: password
+          role: ADMIN
+          id: 6
+          email: email
+          lastname: lastname
+        contenu: contenu
+      properties:
+        id_reponse:
+          format: int32
+          type: integer
+        contenu:
+          type: string
+        dateCreation:
+          format: date-time
+          type: string
+        vote_utilisateur:
+          items:
+            $ref: '#/components/schemas/User'
+          type: array
+      type: object
+

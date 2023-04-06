@@ -18,4 +18,7 @@ public interface ReponseDao extends JpaRepository<Reponse, Long> {
    // List<Reponse> findByAuteur(User user);
 
     List<Reponse> findByQuestionOrderByDateCreationAsc(Question question);
+
+    List<Reponse> findByAuteurOrderByDateCreationAsc(User auteur);
+
 }

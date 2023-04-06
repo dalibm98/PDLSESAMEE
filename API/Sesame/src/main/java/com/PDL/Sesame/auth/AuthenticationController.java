@@ -9,8 +9,11 @@
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.HttpStatus;
     import org.springframework.http.ResponseEntity;
+    import org.springframework.security.access.prepost.PreAuthorize;
+    import org.springframework.transaction.annotation.Transactional;
     import org.springframework.web.bind.annotation.*;
     import java.time.LocalDateTime;
+    import java.util.Collections;
     import java.util.Date;
     import java.util.List;
     import java.util.Optional;
@@ -32,16 +35,19 @@
         private final DomaineQuestionRepository domaineDao ;
         private final NotificationDao notificationDao;
 
+        private final ReponseDao  reponseDao ;
+
 
 
         @Autowired
-        public AuthenticationController(AuthenticationService service, QuestionDao questionDao, UserDao repository, NotificationDao notificationDao ,NatureQuestionRepository natureDao ,DomaineQuestionRepository domaineDao) {
+        public AuthenticationController(AuthenticationService service, QuestionDao questionDao, UserDao repository, NotificationDao notificationDao ,NatureQuestionRepository natureDao ,DomaineQuestionRepository domaineDao, ReponseDao reponseDao) {
             this.service = service;
             this.questionDao = questionDao;
             this.repository = repository;
             this.notificationDao = notificationDao;
             this.natureDao = natureDao ;
             this.domaineDao =domaineDao ;
+            this.reponseDao = reponseDao ;
         }
         @PostMapping("/register")
         @Operation(summary = "Inscription USER")
@@ -234,8 +240,6 @@
             return ResponseEntity.ok(user.getNotifications());
         }
 
-
-
         @GetMapping("/questions-with-reponses")
         @Operation(summary = "Get all question avec reponses")
         @ApiResponses(value = {
@@ -245,4 +249,51 @@
             return ResponseEntity.ok(service.getAllQuestionsWithReponses());
         }
 
+            @PutMapping("/{reponseId}/vote")
+            @Operation(summary = "Voter une Reponse de user a la question")
+            @ApiResponses(value = {
+                    @ApiResponse(responseCode = "200", description = "Reponse Votée"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")})
+            public ResponseEntity<Void> voteForReponse(@PathVariable Long reponseId) {
+                service.voteForReponse(reponseId);
+                return ResponseEntity.ok().build();
+            }
+
+            @GetMapping("/questions/{questionId}/classement")
+            @Operation(summary = "Get all Classement Question par Vote ")
+            @ApiResponses(value = {
+                    @ApiResponse(responseCode = "200", description = "Vote de question "),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")})
+            public ResponseEntity<List<Reponse>> getReponsesTrieParVotes(@PathVariable Long questionId) {
+                List<Reponse> reponses = service.getReponsesTrieParVotes(questionId);
+                return ResponseEntity.ok().body(reponses);
+            }
+
+        @GetMapping("/users/{userId}/meilleures-reponses")
+        @Operation(summary = "Get all meilleures-reponses par User ")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "meilleures-reponses"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
+        @PreAuthorize("hasRole('ROLE_USER')")
+        public ResponseEntity<List<Reponse>> getMeilleuresReponsesParUser(@PathVariable Long userId) {
+            List<Reponse> reponses = service.getMeilleuresReponsesParUser(userId);
+            return ResponseEntity.ok().body(reponses);
+        }
+
+
+        @GetMapping("/reponses/meilleures")
+        @Operation(summary = "Get all meilleures-reponses pour tous les users  dans le base  ")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "meilleures-reponses pour tous les users "),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
+        @PreAuthorize("hasRole('ROLE_USER')")
+        public ResponseEntity<List<Reponse>> getMeilleuresReponsesTrieParVotes() {
+            List<Reponse> reponses = service.getMeilleuresReponsesTrieParVotes();
+            return ResponseEntity.ok().body(reponses);
+        }
+
+
     }
+
+
+

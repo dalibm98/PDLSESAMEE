@@ -23,9 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -183,6 +181,58 @@ public class AuthenticationService {
             questionsWithReponses.add(new QuestionWithReponses(question, reponses));
         }
         return questionsWithReponses;
+    }
+
+
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @Transactional
+    public void voteForReponse(Long reponseId) {
+        User user = getCurrentUser();
+        if (user != null) {
+            Reponse reponse = reponseDao.findById(reponseId).orElse(null);
+            if (reponse != null) {
+                List<User> vote_utilisateur = reponse.getVote_utilisateur();
+                if (vote_utilisateur == null) {
+                    vote_utilisateur = new ArrayList<>();
+                }
+                if (!vote_utilisateur.contains(user)) {
+                    vote_utilisateur.add(user);
+                    reponse.setVote_utilisateur(vote_utilisateur);
+                    reponseDao.save(reponse);
+                }
+            }
+        }
+    }
+
+
+    public List<Reponse> getReponsesTrieParVotes(Long questionId) {
+        List<Reponse> reponses = reponseDao.findByQuestionOrderByDateCreationAsc(questionDao.findById(questionId).orElse(null));
+        if (reponses != null) {
+            Collections.sort(reponses, Comparator.comparingInt(r -> r.getVote_utilisateur().size()));
+        }
+        return reponses;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Reponse> getMeilleuresReponsesParUser(Long userId) {
+        User user =repository.findById(userId).orElse(null);
+        if (user == null) {
+            return Collections.emptyList();
+        }
+        List<Reponse> reponses = reponseDao.findByAuteurOrderByDateCreationAsc(user);
+        if (reponses != null) {
+            Collections.sort(reponses, (r1, r2) -> Integer.compare(r2.getVote_utilisateur().size(), r1.getVote_utilisateur().size()));
+        }
+        return reponses;
+    }
+
+
+
+    public List<Reponse> getMeilleuresReponsesTrieParVotes() {
+        List<Reponse> reponses = reponseDao.findAll();
+        Collections.sort(reponses, Comparator.comparingInt(r -> r.getVote_utilisateur().size()));
+        Collections.reverse(reponses);
+        return reponses;
     }
 
 

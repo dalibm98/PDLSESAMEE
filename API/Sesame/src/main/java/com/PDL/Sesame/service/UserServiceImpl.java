@@ -1,27 +1,24 @@
 package com.PDL.Sesame.service;
 
+import com.PDL.Sesame.Exception.ResourceNotFoundException;
+import com.PDL.Sesame.dao.UserDao;
+import com.PDL.Sesame.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 
 @Service
-public class UserServiceImpl  {
-
-    /* implements UserService {
+public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserDao userDao;
 
-    @Autowired
-    private RoleDao roleDao;
-
-
     public UserServiceImpl(UserDao userDao) {
         this.userDao = userDao;
     }
-
-
-
-
 
 
     @Override
@@ -40,15 +37,13 @@ public class UserServiceImpl  {
         }
     }
 
-
     @Override
     public User updateUser(Long id, User user) {
         User existingUser = userDao.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         existingUser.setEmail(user.getEmail());
-        existingUser.setNom(user.getNom());
-        existingUser.setPrenom(user.getPrenom());
-        existingUser.setRole(user.getRole());
+        existingUser.setFirstname(user.getFirstname());
+        existingUser.setLastname(user.getLastname());
         return userDao.save(existingUser);
     }
 
@@ -58,49 +53,5 @@ public class UserServiceImpl  {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         userDao.delete(user);
     }
-
-    @Override
-    public User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && authentication instanceof OAuth2AuthenticationToken) {
-            OAuth2User principal = (OAuth2User) authentication.getPrincipal();
-            String email = principal.getAttribute("email");
-
-            return userDao.findByEmail(email)
-                    .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
-        }
-        return null;
-    }
-
-
-
-
-
-
-
-
-
-
-    @Override
-    public List<User> getUsersByRole(RoleEnum roleEnum) {
-        Role role = roleDao.findByNomRole(roleEnum);
-        return userDao.findByRole(role);
-    }
-
-    @Override
-    public Optional<User> findByEmail(String email) {
-        return userDao.findByEmail(email);
-
-
-    }
-
-
-
-
-
-
-
-     */
-
 
 }

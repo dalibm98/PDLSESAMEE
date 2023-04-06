@@ -1,7 +1,11 @@
     package com.PDL.Sesame.auth;
     import com.PDL.Sesame.dao.*;
     import com.PDL.Sesame.model.*;
+    import io.swagger.v3.oas.annotations.Operation;
+    import io.swagger.v3.oas.annotations.responses.ApiResponse;
+    import io.swagger.v3.oas.annotations.responses.ApiResponses;
     import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+    import io.swagger.v3.oas.annotations.tags.Tag;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.HttpStatus;
     import org.springframework.http.ResponseEntity;
@@ -14,6 +18,7 @@
     @RestController
     @RequestMapping("/api/v1/auth")
     @SecurityRequirement(name = "bearerAuth")
+    @Tag(name = "Authentication", description = "Operations related to Authentication")
     //@RequiredArgsConstructor
     public class AuthenticationController {
 
@@ -39,80 +44,34 @@
             this.domaineDao =domaineDao ;
         }
         @PostMapping("/register")
+        @Operation(summary = "Inscription USER")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "User created"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
         public ResponseEntity<AuthenticationResponse> register(
                 @RequestBody RegisterRequest request
         ) {
             return ResponseEntity.ok(service.register(request));
         }
+
+
         @PostMapping("/authenticate")
+        @Operation(summary = "login user ")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "User authetifier avec succées"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
         public ResponseEntity<AuthenticationResponse> authenticate(
                 @RequestBody AuthenticationRequest request
         ) {
             return ResponseEntity.ok(service.authenticate(request));
         }
-/*
+
+
         @PostMapping("/questions")
-        public ResponseEntity<Question> addQuestion(@RequestBody Question question) {
-            User user = service.getCurrentUser();
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-            service.addQuestion(question);
-            return ResponseEntity.ok(question);
-        }
-
- */
-
-
-       /*
-        @PostMapping("/questions")
-        public ResponseEntity<Question> addQuestion(@RequestBody Question question) {
-            User user = service.getCurrentUser();
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            NatureQuestion natureQuestion = null;
-            if (question.getNature() != null && question.getNature().getId_nature_question() != null) {
-                Optional<NatureQuestion> optionalNatureQuestion = natureDao.findById(question.getNature().getId_nature_question());
-                if (optionalNatureQuestion.isPresent()) {
-                    natureQuestion = optionalNatureQuestion.get();
-                    System.out.println("NatureQuestion récupérée : " + natureQuestion.toString());
-                }
-            }
-
-            DomaineQuestion domaineQuestion = null;
-            if (question.getDomaine() != null && question.getDomaine().getId_domaine_question() != null) {
-                Optional<DomaineQuestion> optionalDomaineQuestion = domaineDao.findById(question.getDomaine().getId_domaine_question());
-                if (optionalDomaineQuestion.isPresent()) {
-                    domaineQuestion = optionalDomaineQuestion.get();
-                    System.out.println("DomaineQuestion récupérée : " + domaineQuestion.toString());
-                }
-            }
-            question.setNature(natureQuestion);
-            question.setDomaine(domaineQuestion);
-            question.setAuteur(user);
-            question.setAnswered(false);
-            question.setDate(LocalDateTime.now());
-            service.addQuestion(question);
-            return ResponseEntity.ok(question);
-        }
-
-
-
-        @GetMapping("/questions/{id}")
-        public ResponseEntity<Question> getQuestionById(@PathVariable long id) {
-            Question question = service.getQuestionById(id);
-            if (question == null) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(question);
-        }
-
-        */
-
-
-        @PostMapping
+        @Operation(summary = "Add a new question")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Question created"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
         public ResponseEntity<User> addQuestion(@RequestBody Question question) {
             User user =service.addQuestion(question);
             if (user == null) {
@@ -179,6 +138,11 @@
  */
 
         @PostMapping("/questions/{questionId}/reponses")
+
+        @Operation(summary = "Add a  new reponses")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Reponse ajouter avec succées"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
         public ResponseEntity<User> addReponse(@PathVariable Long questionId, @RequestBody Reponse reponse) {
             User user = service.addReponse(questionId, reponse);
             if (user == null) {
@@ -201,6 +165,10 @@
 
 
         @GetMapping("/current-user")
+        @Operation(summary = "Get user connecter actuel")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "User connecteé"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
         public ResponseEntity<User> getCurrentUser() {
             User user = service.getCurrentUser();
             if (user == null) {
@@ -231,6 +199,10 @@
 
 
         @PutMapping("/notifications/{notificationId}")
+        @Operation(summary = "faire vue a la notifcation")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Vue"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
         public ResponseEntity<Notification> markNotificationAsRead(@PathVariable Long notificationId) {
             User user = service.getCurrentUser();
             if (user == null) {
@@ -250,6 +222,10 @@
 
 
         @GetMapping("/notifications")
+        @Operation(summary = "Get all notification par user ")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "all notification"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
         public ResponseEntity<List<Notification>> getNotifications() {
             User user = service.getCurrentUser();
             if (user == null) {
@@ -258,7 +234,13 @@
             return ResponseEntity.ok(user.getNotifications());
         }
 
+
+
         @GetMapping("/questions-with-reponses")
+        @Operation(summary = "Get all question avec reponses")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = ""),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
         public ResponseEntity<List<QuestionWithReponses>> getAllQuestionsWithReponses() {
             return ResponseEntity.ok(service.getAllQuestionsWithReponses());
         }

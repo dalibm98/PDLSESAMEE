@@ -85,64 +85,6 @@
             }
             return ResponseEntity.ok(user);
         }
-
-
-
-/*
-        @PostMapping("/questions")
-        @Operation(summary = "Add a new question")
-        @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "Question created"),
-                @ApiResponse(responseCode = "401", description = "Unauthorized")})
-        public ResponseEntity<Question> addQuestion(@RequestBody Question question) {
-            User user = service.getCurrentUser();
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            if (question.getNature() != null && question.getNature().getId_nature_question() != null) {
-                Optional<NatureQuestion> optionalNature = natureDao.findById(question.getNature().getId_nature_question());
-                if (optionalNature.isPresent()) {
-                    question.setNature(optionalNature.get());
-                }
-            }
-
-            if (question.getDomaine() != null && question.getDomaine().getId_domaine_question() != null) {
-                Optional<DomaineQuestion> optionalDomaine = domaineDao.findById(question.getDomaine().getId_domaine_question());
-                if (optionalDomaine.isPresent()) {
-                    question.setDomaine(optionalDomaine.get());
-                }
-            }
-
-            question.setAuteur(user);
-            question.setDate(LocalDateTime.now());
-
-            service.addQuestion(question);
-
-            return ResponseEntity.ok(question);
-        }
-
- */
-
-
-
-
-
-/*
-        @PostMapping("/questions/{questionId}/reponses")
-        public ResponseEntity<User> addReponse(@PathVariable Long questionId, @RequestBody Reponse reponse) {
-            User user = service.addReponse(questionId, reponse);
-            if (user == null) {
-                return ResponseEntity.notFound().build(); // retourne une réponse HTTP 404 si l'utilisateur n'est pas trouvé
-            }
-            return ResponseEntity.ok(user);
-        }
-
-
-
-
- */
-
         @PostMapping("/questions/{questionId}/reponses")
 
         @Operation(summary = "Add a  new reponses")
@@ -168,8 +110,6 @@
 
             return ResponseEntity.ok(user);
         }
-
-
         @GetMapping("/current-user")
         @Operation(summary = "Get user connecter actuel")
         @ApiResponses(value = {
@@ -182,28 +122,6 @@
             }
             return ResponseEntity.ok(user);
         }
-
-
-/*
-        @PutMapping("/notifications/{notificationId}")
-        public ResponseEntity<Notification> markNotificationAsRead(@PathVariable Long notificationId) {
-            User user = service.getCurrentUser();
-            if (user == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            Notification notification = user.getNotifications().stream().filter(n -> n.getId_notification().equals(notificationId)).findFirst().orElse(null);
-            if (notification == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            notification.setEstLu(true);
-            return ResponseEntity.ok(notification);
-        }
-
- */
-
-
         @PutMapping("/notifications/{notificationId}")
         @Operation(summary = "faire vue a la notifcation")
         @ApiResponses(value = {
@@ -291,8 +209,6 @@
             List<Reponse> reponses = service.getMeilleuresReponsesTrieParVotes();
             return ResponseEntity.ok().body(reponses);
         }
-
-
     }
 
 

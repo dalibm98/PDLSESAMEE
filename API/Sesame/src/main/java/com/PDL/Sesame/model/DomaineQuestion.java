@@ -19,12 +19,9 @@ public class DomaineQuestion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_domaine_question;
-
     @Column(nullable = false)
     private String nom_domaine_question;
-
     @JsonIgnore
-    //@JsonIgnoreProperties("domaine")
     @OneToMany(mappedBy = "domaine")
     private List<Question> questions ;
 

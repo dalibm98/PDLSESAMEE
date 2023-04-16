@@ -24,7 +24,7 @@ public class Reponse {
     private String contenu;
 
     private LocalDateTime dateCreation;
-    @JsonIgnore
+
     @ManyToOne
     @JoinColumn(name = "id_utilisateur")
     private User auteur;

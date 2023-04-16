@@ -1,4 +1,5 @@
     package com.PDL.Sesame.auth;
+    import com.PDL.Sesame.config.ResourceNotFoundException;
     import com.PDL.Sesame.dao.*;
     import com.PDL.Sesame.model.*;
     import io.swagger.v3.oas.annotations.Operation;
@@ -17,10 +18,7 @@
 
     import java.io.IOException;
     import java.time.LocalDateTime;
-    import java.util.Collections;
-    import java.util.Date;
-    import java.util.List;
-    import java.util.Optional;
+    import java.util.*;
     import java.io.File;
     import org.apache.commons.io.FileUtils;
 
@@ -255,6 +253,37 @@
             List<Reponse> reponses = service.getMeilleuresReponsesTrieParVotes();
             return ResponseEntity.ok().body(reponses);
         }
+
+
+        @GetMapping("/users/stats")
+        @Operation(summary = "Get statistics about users")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Statistics returned"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        public ResponseEntity<List<UserStats>> getUserStats() {
+            List<User> users = repository.findAll();
+            List<UserStats> stats = new ArrayList<>();
+
+            for (User user : users) {
+                Long questionCount = questionDao.countByAuteur(user);
+                Long reponseCount = reponseDao.countByAuteur(user);
+                stats.add(new UserStats(user.getUsername(), questionCount, reponseCount));
+            }
+
+            return ResponseEntity.ok(stats);
+        }
+        @GetMapping("/{userId}/stats")
+        public ResponseEntity<UserStats> getUserStats(@PathVariable Long userId) {
+            User user = repository.findById(userId).orElseThrow(() ->new ResourceNotFoundException("User not found"));
+
+            Long questionCount = questionDao.countByAuteur(user);
+            Long reponseCount = reponseDao.countByAuteur(user);
+            UserStats stats = new UserStats(user.getFirstname(), questionCount, reponseCount);
+            return ResponseEntity.ok(stats);
+        }
+
+
     }
 
 

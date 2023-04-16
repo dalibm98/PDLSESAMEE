@@ -19,5 +19,5 @@ public interface QuestionDao extends JpaRepository<Question, Long> {
    // List<Question> findByIsAnsweredTrue();
 
     List<Question> findAllByOrderByDateDesc();
-
+    Long countByAuteur(User user);
 }

@@ -1,4 +1,5 @@
     package com.PDL.Sesame.auth;
+    import com.PDL.Sesame.config.ResourceNotFoundException;
     import com.PDL.Sesame.dao.*;
     import com.PDL.Sesame.model.*;
     import io.swagger.v3.oas.annotations.Operation;
@@ -7,37 +8,33 @@
     import io.swagger.v3.oas.annotations.security.SecurityRequirement;
     import io.swagger.v3.oas.annotations.tags.Tag;
     import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.http.HttpHeaders;
     import org.springframework.http.HttpStatus;
+    import org.springframework.http.MediaType;
     import org.springframework.http.ResponseEntity;
     import org.springframework.security.access.prepost.PreAuthorize;
     import org.springframework.transaction.annotation.Transactional;
     import org.springframework.web.bind.annotation.*;
+
+    import java.io.IOException;
     import java.time.LocalDateTime;
-    import java.util.Collections;
-    import java.util.Date;
-    import java.util.List;
-    import java.util.Optional;
+    import java.util.*;
+    import java.io.File;
+    import org.apache.commons.io.FileUtils;
 
     @RestController
     @RequestMapping("/api/v1/auth")
     @SecurityRequirement(name = "bearerAuth")
     @Tag(name = "Authentication", description = "Operations related to Authentication")
-    //@RequiredArgsConstructor
+
     public class AuthenticationController {
-
         private final AuthenticationService service;
-
         private final QuestionDao questionDao;
-
         private final UserDao repository;
-
         private final NatureQuestionRepository natureDao ;
         private final DomaineQuestionRepository domaineDao ;
         private final NotificationDao notificationDao;
-
         private final ReponseDao  reponseDao ;
-
-
 
         @Autowired
         public AuthenticationController(AuthenticationService service, QuestionDao questionDao, UserDao repository, NotificationDao notificationDao ,NatureQuestionRepository natureDao ,DomaineQuestionRepository domaineDao, ReponseDao reponseDao) {
@@ -59,8 +56,6 @@
         ) {
             return ResponseEntity.ok(service.register(request));
         }
-
-
         @PostMapping("/authenticate")
         @Operation(summary = "login user ")
         @ApiResponses(value = {
@@ -71,8 +66,6 @@
         ) {
             return ResponseEntity.ok(service.authenticate(request));
         }
-
-
         @PostMapping("/questions")
         @Operation(summary = "Add a new question")
         @ApiResponses(value = {
@@ -85,6 +78,57 @@
             }
             return ResponseEntity.ok(user);
         }
+        @PostMapping("/users/{userId}")
+        public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody User user) throws IOException {
+            // Obtenir l'utilisateur actuellement connecté
+            User currentUser = service.getCurrentUser();
+
+            // Vérifier que l'utilisateur connecté est bien l'utilisateur que l'on souhaite mettre à jour
+            if (!currentUser.getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            // Récupérer l'utilisateur à partir de la base de données
+            User existingUser = repository.findById(userId).orElse(null);
+            if (existingUser == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Mettre à jour les propriétés de l'utilisateur
+            existingUser.setFirstname(user.getFirstname());
+            existingUser.setLastname(user.getLastname());
+            existingUser.setEmail(user.getEmail());
+            existingUser.setImageUrl(user.getImageUrl());
+
+            // Enregistrer le fichier dans la base de données
+            if (user.getImage() != null) {
+                String filename = "user_" + userId + ".jpg";
+                FileUtils.writeByteArrayToFile(new File(filename), user.getImage());
+                existingUser.setImageUrl(filename);
+            }
+            // Enregistrer les modifications dans la base de données
+            repository.save(existingUser);
+            return ResponseEntity.ok().build();
+        }
+
+        @GetMapping("/users/{userId}/image")
+        public ResponseEntity<byte[]> getUserImage(@PathVariable Long userId) throws IOException {
+            // Récupérer l'utilisateur à partir de la base de données
+            User existingUser = repository.findById(userId).orElse(null);
+            if (existingUser == null) {
+                return ResponseEntity.notFound().build();
+            }
+            // Lire les données de l'image à partir du fichier
+            String filename = "user_" + userId + ".jpg";
+            byte[] imageData = FileUtils.readFileToByteArray(new File(filename));
+
+            // Renvoyer les données de l'image dans la réponse HTTP
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+            headers.setContentLength(imageData.length);
+            return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
+        }
+
         @PostMapping("/questions/{questionId}/reponses")
 
         @Operation(summary = "Add a  new reponses")
@@ -209,6 +253,37 @@
             List<Reponse> reponses = service.getMeilleuresReponsesTrieParVotes();
             return ResponseEntity.ok().body(reponses);
         }
+
+
+        @GetMapping("/users/stats")
+        @Operation(summary = "Get statistics about users")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Statistics returned"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        public ResponseEntity<List<UserStats>> getUserStats() {
+            List<User> users = repository.findAll();
+            List<UserStats> stats = new ArrayList<>();
+
+            for (User user : users) {
+                Long questionCount = questionDao.countByAuteur(user);
+                Long reponseCount = reponseDao.countByAuteur(user);
+                stats.add(new UserStats(user.getUsername(), questionCount, reponseCount));
+            }
+
+            return ResponseEntity.ok(stats);
+        }
+        @GetMapping("/{userId}/stats")
+        public ResponseEntity<UserStats> getUserStats(@PathVariable Long userId) {
+            User user = repository.findById(userId).orElseThrow(() ->new ResourceNotFoundException("User not found"));
+
+            Long questionCount = questionDao.countByAuteur(user);
+            Long reponseCount = reponseDao.countByAuteur(user);
+            UserStats stats = new UserStats(user.getFirstname(), questionCount, reponseCount);
+            return ResponseEntity.ok(stats);
+        }
+
+
     }
 
 

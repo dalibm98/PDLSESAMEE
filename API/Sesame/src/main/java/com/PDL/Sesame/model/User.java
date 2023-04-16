@@ -28,8 +28,14 @@ public class User implements UserDetails {
     private String email;
     private String password;
 
+    private String status ;
+
+    private String description;
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
+
+    private String imageUrl;
+
     @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
@@ -79,4 +85,8 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "auteur", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<Reponse> reponses;
 
+    public byte[] getImage() {
+        // return the byte array for the user's image
+        return null;
+    }
 }

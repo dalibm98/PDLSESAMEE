@@ -20,5 +20,5 @@ public interface ReponseDao extends JpaRepository<Reponse, Long> {
     List<Reponse> findByQuestionOrderByDateCreationAsc(Question question);
 
     List<Reponse> findByAuteurOrderByDateCreationAsc(User auteur);
-
+    Long countByAuteur(User user);
 }

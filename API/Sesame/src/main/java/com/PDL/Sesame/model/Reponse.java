@@ -29,10 +29,10 @@ public class Reponse {
     @JoinColumn(name = "id_utilisateur")
     private User auteur;
 
-    @JsonIgnore
+
     @ManyToOne
     private Question question;
-
+    @JsonIgnore
     @ManyToMany
     private List<User> vote_utilisateur;
 

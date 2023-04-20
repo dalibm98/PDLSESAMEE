@@ -1,6 +1,6 @@
 package com.PDL.Sesame.model;
 
 public enum RoleEnum {
-    ADMIN,
+ADMIN,
     USER
 }

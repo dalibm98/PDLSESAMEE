@@ -345,9 +345,9 @@
             // Mettre à jour les propriétés de l'utilisateur
             existingUser.setFirstname(user.getFirstname());
             existingUser.setLastname(user.getLastname());
-            existingUser.setEmail(user.getEmail());
             existingUser.setStatus(user.getStatus());
             existingUser.setDescription(user.getDescription());
+            existingUser.setAdresse(user.getAdresse());
 
 
 
@@ -401,6 +401,22 @@
 
             return ResponseEntity.ok().build();
         }
+
+
+        @GetMapping("/my-reponses")
+        @Operation(summary = "Get my answers")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "List of my answers"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized")})
+        public ResponseEntity<List<Reponse>> getMyReponses() {
+            User currentUser = service.getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.notFound().build();
+            }
+            List<Reponse> reponses = reponseDao.findByAuteur(currentUser);
+            return ResponseEntity.ok(reponses);
+        }
+
     }
 
 

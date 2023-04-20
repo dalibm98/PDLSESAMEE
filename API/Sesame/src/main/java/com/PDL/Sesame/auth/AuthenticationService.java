@@ -112,7 +112,7 @@ public class AuthenticationService {
         return null;
     }
 
-    //@PreAuthorize("hasRole('ROLE_USER')")
+
     @Transactional
     public User addQuestion(Question question) {
         User user = getCurrentUser();
@@ -128,25 +128,7 @@ public class AuthenticationService {
 
 
 
-/*
-    @PreAuthorize("hasRole('ROLE_USER')")
-    @Transactional
-    public User addQuestion(Question question) {
-        User user = getCurrentUser();
-        if (user != null) {
-            question.setAuteur(user);
-            questionDao.save(question);
-            user.addQuestion(question);
-            userDao.save(user);
-            return user;
-        }
-        return null;
-    }
 
- */
-
-
-    @PreAuthorize("hasRole('ROLE_USER')")
     @Transactional
     public User addReponse(@RequestParam Long questionId, @RequestBody Reponse reponse) {
         User user = getCurrentUser();

@@ -12,12 +12,13 @@ import java.util.List;
 @Transactional
 public interface QuestionDao extends JpaRepository<Question, Long> {
 
-   // List<Question> findByAuteur(User auteur);
+    List<Question> findByAuteur(User auteur);
 
 //    List<Question> findByAuteurAndIsAnsweredTrue(User auteur);
 
-   // List<Question> findByIsAnsweredTrue();
+    // List<Question> findByIsAnsweredTrue();
 
     List<Question> findAllByOrderByDateDesc();
+    Long countByAuteur(User user);
 
 }

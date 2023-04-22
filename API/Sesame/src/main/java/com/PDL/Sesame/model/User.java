@@ -28,14 +28,18 @@ public class User implements UserDetails {
     private String email;
     private String password;
 
-    private String status ;
+    private String status;
 
-    private  String adresse ;
+    private String adresse;
     private String description;
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
 
     private String imageUrl;
+    public byte[] getImage() {
+        // return the byte array for the user's image
+        return null;
+    }
 
     @JsonIgnore
     @OneToMany(mappedBy = "user")
@@ -79,15 +83,11 @@ public class User implements UserDetails {
     @JsonIgnore
     @OneToMany(mappedBy = "destinataire")
     private List<Notification> notifications;
- @JsonIgnore
+    @JsonIgnore
     @OneToMany(mappedBy = "auteur", fetch = FetchType.EAGER)
     private List<Question> questions;
     @JsonIgnore
-    @OneToMany(mappedBy = "auteur", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "auteur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reponse> reponses;
 
-    public byte[] getImage() {
-        // return the byte array for the user's image
-        return null;
-    }
 }

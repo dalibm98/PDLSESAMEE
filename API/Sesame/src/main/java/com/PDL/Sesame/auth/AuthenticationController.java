@@ -21,6 +21,7 @@
     import java.util.*;
     import java.io.File;
     import org.apache.commons.io.FileUtils;
+    import org.springframework.web.multipart.MultipartFile;
 
     @RestController
     @RequestMapping("/api/v1/auth")
@@ -325,13 +326,14 @@
             return ResponseEntity.ok().build();
         }
 
-        @PutMapping("/users/{userId}")
+        @PutMapping(value = "/users/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+
         @Operation(summary = "Modify an user")
         @ApiResponses(value = {
                 @ApiResponse(responseCode = "200", description = "user updated"),
                 @ApiResponse(responseCode = "401", description = "Unauthorized"),
                 @ApiResponse(responseCode = "404", description = "user not found")})
-        public ResponseEntity<?> modifyUser(@PathVariable Long userId, @RequestBody User user) throws IOException {
+        public ResponseEntity<?> modifyUser(@PathVariable Long userId, @RequestParam("image_url") MultipartFile file, @ModelAttribute User user) throws IOException {
             // Obtenir l'utilisateur actuellement connecté
             User currentUser = service.getCurrentUser();
 
@@ -352,11 +354,12 @@
 
 
             // Enregistrer le fichier dans la base de données
-            if (user.getImage() != null) {
+            if (!file.isEmpty()) {
                 String filename = "user_" + userId + ".jpg";
-                FileUtils.writeByteArrayToFile(new File(filename), user.getImage());
+                FileUtils.writeByteArrayToFile(new File(filename), file.getBytes());
                 existingUser.setImageUrl(filename);
             }
+
             // Enregistrer les modifications dans la base de données
             repository.save(existingUser);
             return ResponseEntity.ok().build();
@@ -415,6 +418,55 @@
             }
             List<Reponse> reponses = reponseDao.findByAuteur(currentUser);
             return ResponseEntity.ok(reponses);
+        }
+
+
+        @DeleteMapping("/questions/{questionId}")
+        @Operation(summary = "Delete a question and its answers")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "204", description = "Question and its answers deleted"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                @ApiResponse(responseCode = "404", description = "Question not found")})
+        public ResponseEntity<?> deleteQuestionAndAnswers(@PathVariable Long questionId) {
+            User currentUser = service.getCurrentUser();
+            Question existingQuestion = questionDao.findById(questionId).orElse(null);
+            if (existingQuestion == null) {
+                return ResponseEntity.notFound().build();
+            }
+            if (!existingQuestion.getAuteur().equals(currentUser)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            List<Reponse> reponses = reponseDao.findByQuestion(existingQuestion);
+            reponseDao.deleteAll(reponses);
+            questionDao.delete(existingQuestion);
+            return ResponseEntity.noContent().build();
+        }
+
+
+        @DeleteMapping("/questions/{questionId}/reponses/{reponseId}")
+        @Operation(summary = "Delete an answer")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "204", description = "Answer deleted"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                @ApiResponse(responseCode = "404", description = "Answer not found")})
+        public ResponseEntity<?> deleteAnswer(@PathVariable Long questionId, @PathVariable Long reponseId) {
+            User currentUser = service.getCurrentUser();
+            Question question = questionDao.findById(questionId).orElse(null);
+            if (question == null) {
+                return ResponseEntity.notFound().build();
+            }
+            if (!question.getAuteur().equals(currentUser)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            Reponse reponse = reponseDao.findById(reponseId).orElse(null);
+            if (reponse == null) {
+                return ResponseEntity.notFound().build();
+            }
+            if (!reponse.getQuestion().equals(question)) {
+                return ResponseEntity.notFound().build();
+            }
+            reponseDao.delete(reponse);
+            return ResponseEntity.noContent().build();
         }
 
     }

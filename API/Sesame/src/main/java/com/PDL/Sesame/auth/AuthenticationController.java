@@ -456,12 +456,12 @@
             if (question == null) {
                 return ResponseEntity.notFound().build();
             }
-            if (!question.getAuteur().equals(currentUser)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
             Reponse reponse = reponseDao.findById(reponseId).orElse(null);
             if (reponse == null) {
                 return ResponseEntity.notFound().build();
+            }
+            if (!question.getAuteur().equals(currentUser) && !reponse.getAuteur().equals(currentUser)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             if (!reponse.getQuestion().equals(question)) {
                 return ResponseEntity.notFound().build();
@@ -469,6 +469,7 @@
             reponseDao.delete(reponse);
             return ResponseEntity.noContent().build();
         }
+
 
     }
 

@@ -5,10 +5,13 @@ import com.PDL.Sesame.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findBySenderOrRecipientOrderByCreatedAtDesc(User sender, User recipient);
     List<Message> findBySenderAndRecipientOrSenderAndRecipientOrderByCreatedAtDesc(User sender1, User recipient1, User sender2, User recipient2);
+    List<Message> findBySenderOrRecipientAndCreatedAtGreaterThanEqualOrderByCreatedAtDesc(User sender, User recipient, LocalDateTime timestamp);
 }
+

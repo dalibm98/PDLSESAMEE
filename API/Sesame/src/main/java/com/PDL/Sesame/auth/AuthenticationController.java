@@ -433,9 +433,12 @@
             if (existingQuestion == null) {
                 return ResponseEntity.notFound().build();
             }
+            /*
             if (!existingQuestion.getAuteur().equals(currentUser)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
+
+             */
             List<Reponse> reponses = reponseDao.findByQuestion(existingQuestion);
             reponseDao.deleteAll(reponses);
             questionDao.delete(existingQuestion);
@@ -460,9 +463,12 @@
             if (reponse == null) {
                 return ResponseEntity.notFound().build();
             }
+            /*
             if (!question.getAuteur().equals(currentUser) && !reponse.getAuteur().equals(currentUser)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
+            */
+
             if (!reponse.getQuestion().equals(question)) {
                 return ResponseEntity.notFound().build();
             }

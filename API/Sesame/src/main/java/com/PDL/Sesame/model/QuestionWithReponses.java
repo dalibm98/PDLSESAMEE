@@ -10,7 +10,6 @@ public class QuestionWithReponses {
         this.question = question;
         this.reponses = reponses;
     }
-
     public Question getQuestion() {
         return question;
     }

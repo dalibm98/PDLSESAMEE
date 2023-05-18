@@ -9,6 +9,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -27,6 +31,9 @@ public class MessageController {
         this.userService = userService;
     }
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     @PostMapping
     @Operation(summary = "Send Message")
     @ApiResponses(value = {
@@ -37,9 +44,22 @@ public class MessageController {
         User sender = userService.getCurrentUser();
         User recipient = userService.getUserById(messageDto.getRecipientId());
         Message message = messageService.sendMessage(sender, recipient, messageDto.getContent());
-        return new MessageDto(message);
+        MessageDto messageDtoResponse = new MessageDto(message);
+
+        messagingTemplate.convertAndSendToUser(recipient.getUsername(), "/topic/messages", messageDtoResponse);
+
+        return messageDtoResponse;
     }
 
+    @MessageMapping("/messages")
+    public void receiveMessage(@Payload MessageDto messageDto) {
+        User sender = userService.getCurrentUser();
+        User recipient = userService.getUserById(messageDto.getRecipientId());
+        Message message = messageService.sendMessage(sender, recipient, messageDto.getContent());
+        MessageDto messageDtoResponse = new MessageDto(message);
+
+        messagingTemplate.convertAndSendToUser(recipient.getUsername(), "/topic/messages", messageDtoResponse);
+    }
 
     @GetMapping
     @Operation(summary = "Get all Messages")
@@ -52,19 +72,17 @@ public class MessageController {
         return messages.stream().map(MessageDto::new).collect(Collectors.toList());
     }
 
-
-    // Ajout de la fonctionnalité pour récupérer les messages entre deux utilisateurs spécifiques
-    @GetMapping("/{recipientUsername}")
-    @Operation(summary = "Get all Messages entre deux user spécifiques")
+    @GetMapping("/messages/{recipientUsername}")
+    @Operation(summary = "Get all Messages with specific recipient")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "all Messages entre deux user spécifiques"),
+            @ApiResponse(responseCode = "200", description = "all Messages with specific recipient"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    public List<MessageDto> getMessagesWithRecipient(@PathVariable String recipientUsername) {
+    public List<MessageDto> getMessagesWithRecipient(@PathVariable("recipientUsername")Integer idRecipient) {
         User currentUser = userService.getCurrentUser();
-        User recipientUser = userService.getUserByEmail(recipientUsername);
-
+        User recipientUser = userService.getUserById(idRecipient.intValue());
         List<Message> messages = messageService.getMessagesBetweenUsers(currentUser, recipientUser);
         return messages.stream().map(MessageDto::new).collect(Collectors.toList());
     }
+
 
 }

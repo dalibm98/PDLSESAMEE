@@ -1,5 +1,6 @@
 package com.PDL.Sesame.NewC;
 
+import com.PDL.Sesame.configmessage.WebSocketConfiguration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,10 @@ import org.springframework.web.cors.CorsConfiguration;
 
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
+import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
 
 
 import java.util.Arrays;
@@ -34,7 +39,7 @@ public class SecurityConfiguration {
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api/questions/**", "/users/**" , "/api/domaine-questions/**" , "/api/nature-questions/**" ,"/api/v1/auth/users/**")
+                .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api/questions/**", "/users/**" , "/api/domaine-questions/**" , "/api/nature-questions/**" ,"/api/v1/auth/users/**" , "/topic/messages/**","/api/messages/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -62,11 +67,32 @@ public class SecurityConfiguration {
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+      //  config.setAllowedOrigins(Arrays.asList("http://localhost:8080/ws"));
         config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
+
+
+
     }
+
+    @Bean
+    public WebSocketHandlerDecoratorFactory corsWebSocketHandlerDecoratorFactory() {
+        return new WebSocketHandlerDecoratorFactory() {
+            @Override
+            public WebSocketHandler decorate(WebSocketHandler handler) {
+                return new WebSocketHandlerDecorator(handler) {
+                    @Override
+                    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+                        super.afterConnectionEstablished(session);
+                        session.getHandshakeHeaders().set("Access-Control-Allow-Origin", "*");
+                    }
+                };
+            }
+        };
+    }
+
 
 
 }

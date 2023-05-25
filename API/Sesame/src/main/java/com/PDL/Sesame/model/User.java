@@ -90,4 +90,5 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "auteur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reponse> reponses;
 
+
 }

@@ -145,14 +145,11 @@
             // Envoyer une notification à l'utilisateur qui a posé la question
             Question question = questionDao.findById(questionId).orElse(null);
             if (question != null && question.getAuteur() != null && !question.getAuteur().equals(user)) {
-
                 //String message = String.format("La question '%s' a une nouvelle réponse.", question.getSujet());
-
                 String message = String.format("La question '%s' a une nouvelle réponse ajoutée par '%s'.", question.getSujet(), user.getUsername());
                 Notification notification = new Notification(message, false, new Date(), question.getAuteur());
                 notificationDao.save(notification);
             }
-
             return ResponseEntity.ok(user);
         }
         @GetMapping("/current-user")

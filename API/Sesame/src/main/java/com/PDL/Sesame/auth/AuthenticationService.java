@@ -59,6 +59,21 @@ public class AuthenticationService {
                 .build();
     }
 
+
+    public AuthenticationResponse changePassword(String newPassword) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof User) {
+            User user = (User) authentication.getPrincipal();
+            user.setPassword(passwordEncoder.encode(newPassword));
+            repository.save(user);
+            return AuthenticationResponse.builder()
+                    .token(jwtService.generateToken(user))
+                    .build();
+        }
+        throw new RuntimeException("User not authenticated");
+    }
+
+
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

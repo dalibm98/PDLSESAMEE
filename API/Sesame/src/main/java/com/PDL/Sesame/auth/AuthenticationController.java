@@ -67,6 +67,13 @@
         ) {
             return ResponseEntity.ok(service.authenticate(request));
         }
+        @PostMapping("/change-password")
+        public ResponseEntity<AuthenticationResponse> changePassword(@RequestBody Map<String, String> newPasswordMap) {
+            String newPassword = newPasswordMap.get("newPassword");
+            AuthenticationResponse response = service.changePassword(newPassword);
+            return ResponseEntity.ok(response);
+        }
+
         @PostMapping("/questions")
         @Operation(summary = "Add a new question")
         @ApiResponses(value = {

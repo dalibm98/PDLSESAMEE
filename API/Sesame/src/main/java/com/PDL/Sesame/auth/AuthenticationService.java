@@ -34,11 +34,11 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    private  final UserDao userDao ;
-    private final QuestionDao questionDao ;
+    private final UserDao userDao;
+    private final QuestionDao questionDao;
 
 
-    private  final ReponseDao reponseDao ;
+    private final ReponseDao reponseDao;
 
     public AuthenticationResponse register(RegisterRequest request) {
         var user = User.builder()
@@ -134,14 +134,12 @@ public class AuthenticationService {
         if (user != null) {
             question.setAuteur(user);
             questionDao.save(question);
-           user.getQuestions().add(question);
+            user.getQuestions().add(question);
             userDao.save(user);
             return user;
         }
         return null;
     }
-
-
 
 
     @Transactional
@@ -212,7 +210,7 @@ public class AuthenticationService {
 
     @Transactional(readOnly = true)
     public List<Reponse> getMeilleuresReponsesParUser(Long userId) {
-        User user =repository.findById(userId).orElse(null);
+        User user = repository.findById(userId).orElse(null);
         if (user == null) {
             return Collections.emptyList();
         }
@@ -222,7 +220,6 @@ public class AuthenticationService {
         }
         return reponses;
     }
-
 
 
     public List<Reponse> getMeilleuresReponsesTrieParVotes() {
@@ -244,4 +241,16 @@ public class AuthenticationService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username : " + username));
     }
 
+
+
+
+
+
+    public int getNombreTotalCommentaires() {
+        return (int) reponseDao.count();
+    }
+
+    public int getNombreTotalQuestions() {
+        return (int) questionDao.count();
+    }
 }

@@ -39,7 +39,7 @@ public class SecurityConfiguration {
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api/questions/**", "/users/**" , "/api/domaine-questions/**" , "/api/nature-questions/**" ,"/api/v1/auth/users/**" , "/topic/messages/**","/api/messages/**")
+                .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api/questions/**", "/users/**" , "/api/domaine-questions/**" , "/api/nature-questions/**" ,"/api/v1/auth/users/**" , "/topic/messages/**","/api/messages/**","/ws","/topic","/app","votes/commentaires/total","votes/questions/total")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -63,7 +63,6 @@ public class SecurityConfiguration {
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
-      //  config.setAllowedOrigins(Arrays.asList("http://localhost:8080/ws"));
         config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         source.registerCorsConfiguration("/**", config);

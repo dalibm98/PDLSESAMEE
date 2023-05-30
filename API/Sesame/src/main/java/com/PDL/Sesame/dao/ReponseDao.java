@@ -3,7 +3,9 @@ package com.PDL.Sesame.dao;
 import com.PDL.Sesame.model.Question;
 import com.PDL.Sesame.model.Reponse;
 import com.PDL.Sesame.model.User;
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,11 @@ public interface ReponseDao extends JpaRepository<Reponse, Long> {
     Long countByAuteur(User user);
 
     List<Reponse> findByQuestion(Question question);
+
+
+
+
+
 
 
 }

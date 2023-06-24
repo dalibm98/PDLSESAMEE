@@ -27,29 +27,46 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
-    private final UserDao repository;
-    private final TokenRepository tokenRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+    public class AuthenticationService {
+        private final UserDao repository;
+        private final TokenRepository tokenRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final JwtService jwtService;
+        private final AuthenticationManager authenticationManager;
 
-    private final UserDao userDao;
-    private final QuestionDao questionDao;
+        private final UserDao userDao;
+        private final QuestionDao questionDao;
 
 
-    private final ReponseDao reponseDao;
+        private final ReponseDao reponseDao;
 
-    public AuthenticationResponse register(RegisterRequest request) {
+        public AuthenticationResponse register(RegisterRequest request) {
+            var user = User.builder()
+                    .firstname(request.getFirstname())
+                    .lastname(request.getLastname())
+                    .email(request.getEmail())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .role(RoleEnum.USER)
+                    .notifications(new ArrayList<>())
+                    .questions(new ArrayList<>())
+                    .reponses(new ArrayList<>())
+                    .build();
+            var savedUser = repository.save(user);
+            var jwtToken = jwtService.generateToken(user);
+            saveUserToken(savedUser, jwtToken);
+            return AuthenticationResponse.builder()
+                    .token(jwtToken)
+                    .build();
+        }
+
+
+    public AuthenticationResponse addNewUser(RegisterRequest request) {
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(RoleEnum.USER)
-                .notifications(new ArrayList<>())
-                .questions(new ArrayList<>())
-                .reponses(new ArrayList<>())
+                .role(RoleEnum.ADMIN)
                 .build();
         var savedUser = repository.save(user);
         var jwtToken = jwtService.generateToken(user);
@@ -60,36 +77,37 @@ public class AuthenticationService {
     }
 
 
-    public AuthenticationResponse changePassword(String newPassword) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof User) {
-            User user = (User) authentication.getPrincipal();
-            user.setPassword(passwordEncoder.encode(newPassword));
-            repository.save(user);
+
+        public AuthenticationResponse changePassword(String newPassword) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof User) {
+                User user = (User) authentication.getPrincipal();
+                user.setPassword(passwordEncoder.encode(newPassword));
+                repository.save(user);
+                return AuthenticationResponse.builder()
+                        .token(jwtService.generateToken(user))
+                        .build();
+            }
+            throw new RuntimeException("User not authenticated");
+        }
+
+
+        public AuthenticationResponse authenticate(AuthenticationRequest request) {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+            var user = repository.findByEmail(request.getEmail())
+                    .orElseThrow();
+            var jwtToken = jwtService.generateToken(user);
+            revokeAllUserTokens(user);
+            saveUserToken(user, jwtToken);
             return AuthenticationResponse.builder()
-                    .token(jwtService.generateToken(user))
+                    .token(jwtToken)
                     .build();
         }
-        throw new RuntimeException("User not authenticated");
-    }
-
-
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        var user = repository.findByEmail(request.getEmail())
-                .orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
-        revokeAllUserTokens(user);
-        saveUserToken(user, jwtToken);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
-    }
 
     private void saveUserToken(User user, String jwtToken) {
         var token = Token.builder()
@@ -252,5 +270,18 @@ public class AuthenticationService {
 
     public int getNombreTotalQuestions() {
         return (int) questionDao.count();
+    }
+
+
+
+
+
+    public long countUsers() {
+        return userDao.count();
+    }
+
+    public int getVoteCountByUser(User user) {
+        // Compter le nombre de votes d'un utilisateur spécifique
+        return reponseDao.countVotesByAuteur(user);
     }
 }

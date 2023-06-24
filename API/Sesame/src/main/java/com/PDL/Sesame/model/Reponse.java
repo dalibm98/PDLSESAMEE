@@ -36,6 +36,4 @@ public class Reponse {
     @ManyToMany
     private List<User> vote_utilisateur;
 
-
-
 }

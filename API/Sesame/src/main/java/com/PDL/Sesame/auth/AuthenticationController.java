@@ -57,6 +57,13 @@
         ) {
             return ResponseEntity.ok(service.register(request));
         }
+
+        @PostMapping("/userss")
+        public ResponseEntity<AuthenticationResponse> addNewUser(@RequestBody RegisterRequest request) {
+            var response = service.addNewUser(request);
+            return ResponseEntity.ok(response);
+        }
+
         @PostMapping("/authenticate")
         @Operation(summary = "login user ")
         @ApiResponses(value = {

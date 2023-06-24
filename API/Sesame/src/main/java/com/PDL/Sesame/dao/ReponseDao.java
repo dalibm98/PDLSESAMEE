@@ -26,9 +26,8 @@ public interface ReponseDao extends JpaRepository<Reponse, Long> {
 
     List<Reponse> findByQuestion(Question question);
 
-
-
-
+    @Query("SELECT COUNT(r) FROM Reponse r WHERE r.auteur = :user")
+    int countVotesByAuteur(@Param("user") User user);
 
 
 
